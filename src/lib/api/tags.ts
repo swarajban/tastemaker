@@ -22,6 +22,7 @@ export async function createTag(userId: string, name: string): Promise<Tag> {
   const { data, error } = await supabase
     .from('tag')
     .insert({ user_id: userId, name })
+    .select()
     .single();
   if (error) throw error;
   return data;
