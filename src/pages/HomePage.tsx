@@ -11,16 +11,6 @@ export default function HomePage() {
 
   const handleLoginClick = async () => {
     navigate('/login');
-    // const sessionResult = await sessionPromise;
-    // const session = sessionResult.data?.session;
-    // // If user is already logged in, go straight to schedules
-    // if (session) {
-    //   navigate('/schedules');
-    // } else {
-    //   // For a real app, you'd show a dedicated login flow or page
-    //   // or perhaps call signInWithEmail(...) etc.
-    //   navigate('/schedules'); 
-    // }
   };
 
   return (
