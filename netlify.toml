@@ -1,0 +1,11 @@
+[build.environment]
+    NODE_ENV = "23.5.0"
+    NETLIFY_SKIP_PYTHON = "true"
+    NETLIFY_SKIP_GO = "true"
+    NETLIFY_SKIP_RUBY = "true"
+
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+        Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.supabase.co; connect-src 'self' https://*.supabase.co; font-src 'self' data:; frame-ancestors 'none';"
