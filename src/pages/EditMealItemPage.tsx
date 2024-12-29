@@ -1,3 +1,4 @@
+// src/pages/EditMealItemPage.tsx
 import React, { useEffect, useState } from 'react';
 import {
   Box,
@@ -10,37 +11,49 @@ import {
   Button,
   Checkbox,
   VStack,
+  HStack,
+  Text,
 } from '@chakra-ui/react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getUserMealItems, updateMealItem, MealItem } from '../lib/api/mealItems';
-import { Tag, getUserTags } from '../lib/api/tags';
+import { getUserMealItemsWithTags, updateMealItem, MealItemWithTags } from '../lib/api/mealItems';
+import { Tag, getUserTags, createTag } from '../lib/api/tags';
 import { supabase } from '../lib/supabaseClient';
 
 export default function EditMealItemPage() {
   const { mealItemId } = useParams();
   const navigate = useNavigate();
 
-  const [mealItem, setMealItem] = useState<MealItem | null>(null);
+  const [mealItem, setMealItem] = useState<MealItemWithTags | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+
+  // Form fields
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [mealType, setMealType] = useState<'main' | 'side'>('main');
   const [effort, setEffort] = useState(1);
 
+  // For creating new tags
+  const [newTagName, setNewTagName] = useState('');
+
   useEffect(() => {
     async function loadData() {
       if (!mealItemId) return;
+
       const sessionResult = await supabase.auth.getSession();
       const userId = sessionResult.data?.session?.user?.id;
       if (!userId) return;
 
-      // 1) Load the user’s meal items 
-      const items = await getUserMealItems(userId);
-      const item = items.find((i) => i.id === mealItemId);
-      if (!item) return; // or handle error
-
+      // 1) Load all user meal items with tags
+      const allItems = await getUserMealItemsWithTags(userId);
+      const item = allItems.find((i) => i.id === mealItemId);
+      if (!item) {
+        console.error('Meal item not found');
+        return;
+      }
       setMealItem(item);
+
+      // Pre-fill the form
       setTitle(item.title);
       setNotes(item.notes || '');
       setMealType(item.type);
@@ -50,22 +63,48 @@ export default function EditMealItemPage() {
       const userTags = await getUserTags(userId);
       setTags(userTags);
 
-      // 3) We need the existing tags for this meal_item. 
-      //    Either query from meal_item_tag or do an RPC that returns joined data.
-      //    For a quick approach, you might fetch the meal_item_tag table directly:
-      const { data: mealItemTags, error } = await supabase
-        .from('meal_item_tag')
-        .select('tag_id')
-        .eq('meal_item_id', mealItemId);
-      if (error) console.error(error);
-
-      if (mealItemTags) {
-        const existingTagIds = mealItemTags.map((row) => row.tag_id);
-        setSelectedTagIds(existingTagIds);
-      }
+      // 3) Mark selectedTagIds for this item’s tags
+      //    item.tags is an array of strings (tag names),
+      //    but we need the tag IDs. So let's map the name->id from userTags.
+      //    Alternatively, your mealItemsWithTags might store IDs instead, 
+      //    but let's assume we only have name in `tags`.
+      const selectedIds: string[] = [];
+      item.tags.forEach((tagName) => {
+        const foundTag = userTags.find(
+          (t) => t.name.toLowerCase() === tagName.toLowerCase()
+        );
+        if (foundTag) {
+          selectedIds.push(foundTag.id);
+        }
+      });
+      setSelectedTagIds(selectedIds);
     }
     loadData();
   }, [mealItemId]);
+
+  const handleAddTag = async () => {
+    if (!newTagName.trim()) return;
+    const existingTag = tags.find(
+      (t) => t.name.toLowerCase() === newTagName.trim().toLowerCase()
+    );
+    let tagId = existingTag?.id;
+
+    if (!existingTag) {
+      const sessionResult = await supabase.auth.getSession();
+      const userId = sessionResult.data?.session?.user?.id;
+      if (!userId) return;
+
+      const newTag = await createTag(userId, newTagName.trim());
+      setTags((prev) => [...prev, newTag]);
+      tagId = newTag.id;
+    }
+
+    // Check in selectedTagIds
+    if (tagId && !selectedTagIds.includes(tagId)) {
+      setSelectedTagIds([...selectedTagIds, tagId]);
+    }
+    setNewTagName('');
+  };
 
   const handleSave = async () => {
     if (!mealItemId) return;
@@ -79,13 +118,13 @@ export default function EditMealItemPage() {
       },
       selectedTagIds
     );
-    navigate('/schedules'); // or back to list
+    navigate('/meal-items');
   };
 
   if (!mealItem) {
     return (
       <Box p={4}>
-        <Heading>Loading...</Heading>
+        <Heading>Loading or not found...</Heading>
       </Box>
     );
   }
@@ -93,6 +132,8 @@ export default function EditMealItemPage() {
   return (
     <Box p={4}>
       <Heading>Edit Meal Item</Heading>
+
+      {/* Title */}
       <FormControl mt={4}>
         <FormLabel>Title</FormLabel>
         <Input
@@ -100,6 +141,8 @@ export default function EditMealItemPage() {
           onChange={(e) => setTitle(e.target.value)}
         />
       </FormControl>
+
+      {/* Notes */}
       <FormControl mt={4}>
         <FormLabel>Notes</FormLabel>
         <Textarea
@@ -107,6 +150,8 @@ export default function EditMealItemPage() {
           onChange={(e) => setNotes(e.target.value)}
         />
       </FormControl>
+
+      {/* Type */}
       <FormControl mt={4}>
         <FormLabel>Type</FormLabel>
         <Select
@@ -117,6 +162,8 @@ export default function EditMealItemPage() {
           <option value="side">Side</option>
         </Select>
       </FormControl>
+
+      {/* Effort */}
       <FormControl mt={4}>
         <FormLabel>Effort (1-3)</FormLabel>
         <Select
@@ -129,8 +176,9 @@ export default function EditMealItemPage() {
         </Select>
       </FormControl>
 
+      {/* Existing Tags (checkboxes) */}
       <FormControl mt={4}>
-        <FormLabel>Tags</FormLabel>
+        <FormLabel>Existing Tags</FormLabel>
         <VStack align="start">
           {tags.map((tag) => (
             <Checkbox
@@ -141,7 +189,9 @@ export default function EditMealItemPage() {
                 if (e.target.checked) {
                   setSelectedTagIds([...selectedTagIds, tag.id]);
                 } else {
-                  setSelectedTagIds(selectedTagIds.filter((id) => id !== tag.id));
+                  setSelectedTagIds(
+                    selectedTagIds.filter((id) => id !== tag.id)
+                  );
                 }
               }}
             >
@@ -150,6 +200,23 @@ export default function EditMealItemPage() {
           ))}
         </VStack>
       </FormControl>
+
+      {/* Add New Tag */}
+      <FormControl mt={4}>
+        <FormLabel>Add a new tag</FormLabel>
+        <HStack>
+          <Input
+            placeholder="Tag name..."
+            value={newTagName}
+            onChange={(e) => setNewTagName(e.target.value)}
+          />
+          <Button onClick={handleAddTag} colorScheme="teal">
+            Add Tag
+          </Button>
+        </HStack>
+      </FormControl>
+
+      {/* Save */}
       <Button mt={4} colorScheme="teal" onClick={handleSave}>
         Save
       </Button>
