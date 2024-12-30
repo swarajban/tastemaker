@@ -18,6 +18,7 @@ import { getUserPreferences, UserPreferences } from '../lib/api/userPreferences'
 import { Tag, getUserTags } from '../lib/api/tags';
 import ScheduleDetail from '../components/schedule/ScheduleDetail';
 import { useNavigate } from 'react-router-dom';
+import { getUserMealItemsWithTags } from '../lib/api/mealItems';
 
 export default function CreateSchedulePage() {
   const nextMonday = getNextMonday();
@@ -145,6 +146,46 @@ export default function CreateSchedulePage() {
     }
   };
 
+  const handlePreviewMealUpdate = async (
+    dayDate: string,
+    mealType: 'lunch' | 'dinner',
+    mainItemId: string,
+    sideItemId: string
+  ) => {
+    // Get the new meal items
+    const sessionResult = await supabase.auth.getSession();
+    const userId = sessionResult.data?.session?.user?.id;
+    if (!userId) return;
+
+    const items = await getUserMealItemsWithTags(userId);
+    const mainItem = items.find(item => item.id === mainItemId);
+    const sideItem = items.find(item => item.id === sideItemId);
+
+    if (!mainItem || !sideItem) return;
+
+    // Update the preview state
+    setPreview(prevPreview => 
+      prevPreview.map(day => {
+        if (day.date === dayDate) {
+          return {
+            ...day,
+            meals: day.meals.map(meal => {
+              if (meal.mealType === mealType) {
+                return {
+                  ...meal,
+                  mainItem,
+                  sideItem,
+                };
+              }
+              return meal;
+            }),
+          };
+        }
+        return day;
+      })
+    );
+  };
+
   return (
     <Box p={4}>
       <Heading>Create Schedule</Heading>
@@ -196,14 +237,18 @@ export default function CreateSchedulePage() {
       </Button>
 
       {preview.length > 0 && (
-        <VStack mt={4} align="start">
-          <ScheduleDetail days={preview} />
-
-          <Button onClick={handleSave} colorScheme="teal">
-            Save Schedule
-          </Button>
-        </VStack>
+        <Box mt={4}>
+          <Heading size="md" mb={2}>Preview</Heading>
+          <ScheduleDetail 
+            days={preview} 
+            onMealUpdate={handlePreviewMealUpdate}
+          />
+        </Box>
       )}
+
+      <Button onClick={handleSave} colorScheme="teal" mt={4}>
+        Save Schedule
+      </Button>
     </Box>
   );
 }
