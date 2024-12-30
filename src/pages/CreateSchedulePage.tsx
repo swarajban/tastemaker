@@ -37,6 +37,8 @@ export default function CreateSchedulePage() {
   const [userPrefs, setUserPrefs] = useState<UserPreferences | null>(null);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -124,6 +126,7 @@ export default function CreateSchedulePage() {
     const userId = sessionResult.data?.session?.user?.id;
     if (!userId) return;
 
+    setIsSaving(true);
     try {
       // Transform preview into data shape for createSchedule
       const dayMeals = preview.map((day) => ({
@@ -143,6 +146,8 @@ export default function CreateSchedulePage() {
     } catch (error) {
       console.error('Error saving schedule:', error);
       // You might want to show an error toast/message to the user here
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -296,7 +301,14 @@ export default function CreateSchedulePage() {
         </Box>
       )}
 
-      <Button onClick={handleSave} colorScheme="teal" mt={4}>
+      <Button 
+        onClick={handleSave} 
+        colorScheme="teal" 
+        mt={4}
+        isLoading={isSaving}
+        loadingText="Saving..."
+        isDisabled={preview.length === 0 || isSaving}
+      >
         Save Schedule
       </Button>
     </Box>
