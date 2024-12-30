@@ -23,6 +23,7 @@ export default function ViewSchedulesPage() {
 
   const [selectedScheduleDays, setSelectedScheduleDays] = useState<GeneratedDay[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [deletingMeal, setDeletingMeal] = useState(false);
 
   useEffect(() => {
     async function loadSchedules() {
@@ -96,6 +97,7 @@ export default function ViewSchedulesPage() {
   const handleMealDelete = async (dayDate: string, mealType: 'lunch' | 'dinner') => {
     if (!selectedScheduleId) return;
 
+    setDeletingMeal(true);
     try {
       // Find the schedule_day for this date
       const { data: dayData } = await supabase
@@ -116,6 +118,8 @@ export default function ViewSchedulesPage() {
       setSelectedScheduleDays(newDays);
     } catch (err) {
       console.error('Error deleting meal:', err);
+    } finally {
+      setDeletingMeal(false);
     }
   };
 
@@ -215,6 +219,7 @@ export default function ViewSchedulesPage() {
                       onMealUpdate={handleMealUpdate}
                       onMealDelete={handleMealDelete}
                       onMealAdd={handleMealAdd}
+                      isDeleting={deletingMeal}
                     />
                   )}
                 </>

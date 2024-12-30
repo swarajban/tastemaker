@@ -9,6 +9,7 @@ interface ScheduleDetailProps {
   onMealDelete?: (dayDate: string, mealType: 'lunch' | 'dinner') => Promise<void>;
   onMealAdd?: (dayDate: string, mealType: 'lunch' | 'dinner', mainItemId: string, sideItemId: string) => Promise<void>;
   readOnly?: boolean;
+  isDeleting?: boolean;
 }
 
 export default function ScheduleDetail({ 
@@ -16,7 +17,8 @@ export default function ScheduleDetail({
   onMealUpdate, 
   onMealDelete,
   onMealAdd,
-  readOnly = false 
+  readOnly = false,
+  isDeleting = false
 }: ScheduleDetailProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -93,6 +95,7 @@ export default function ScheduleDetail({
                         size="sm"
                         colorScheme="red"
                         onClick={() => handleDeleteMeal(day.date, meal.mealType)}
+                        isLoading={isDeleting}
                       >
                         Remove
                       </Button>
