@@ -9,7 +9,7 @@ import {
   HStack,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-import { Schedule, getSchedulesForUser, getScheduleById, updateScheduleMeal, deleteScheduleMeal, addScheduleMeal } from '../lib/api/schedules';
+import { Schedule, getSchedulesForUser, getScheduleById, updateScheduleMeal, deleteScheduleMeal, addScheduleMeal, deleteSchedule } from '../lib/api/schedules';
 import { supabase } from '../lib/supabaseClient';
 import ScheduleDetail from '../components/schedule/ScheduleDetail';
 import { GeneratedDay } from '../lib/util/scheduleGenerator';
@@ -145,6 +145,22 @@ export default function ViewSchedulesPage() {
     }
   };
 
+  const handleDeleteSchedule = async (scheduleId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the schedule selection
+    try {
+      await deleteSchedule(scheduleId);
+      
+      // Remove from local state
+      setSchedules(schedules.filter(s => s.id !== scheduleId));
+      // Clear selection if deleted schedule was selected
+      if (selectedScheduleId === scheduleId) {
+        setSelectedScheduleId(null);
+      }
+    } catch (err) {
+      console.error('Error deleting schedule:', err);
+    }
+  };
+
   return (
     <Box p={4}>
       <Heading mb={4}>Your Schedules</Heading>
@@ -166,10 +182,20 @@ export default function ViewSchedulesPage() {
                 bg={sched.id === selectedScheduleId ? 'gray.100' : 'white'}
                 onClick={() => handleSelectSchedule(sched.id)}
                 cursor="pointer"
+                w="100%"
               >
-                <Text fontWeight="bold">
-                  {sched.start_date} - {sched.end_date}
-                </Text>
+                <HStack justify="space-between" width="100%">
+                  <Text fontWeight="bold">
+                    {sched.start_date} - {sched.end_date}
+                  </Text>
+                  <Button
+                    size="sm"
+                    colorScheme="red"
+                    onClick={(e) => handleDeleteSchedule(sched.id, e)}
+                  >
+                    Delete
+                  </Button>
+                </HStack>
               </Box>
             ))}
           </VStack>
