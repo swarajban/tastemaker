@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import { Box, Text, VStack, Button, useDisclosure } from '@chakra-ui/react';
+import { Box, Text, VStack, Button, useDisclosure, HStack } from '@chakra-ui/react';
 import { GeneratedDay } from '../../lib/util/scheduleGenerator';
 import MealSelector from './MealSelector';
 
 interface ScheduleDetailProps {
   days: GeneratedDay[];
   onMealUpdate?: (dayDate: string, mealType: 'lunch' | 'dinner', mainItemId: string, sideItemId: string) => Promise<void>;
+  onMealDelete?: (dayDate: string, mealType: 'lunch' | 'dinner') => Promise<void>;
   readOnly?: boolean;
 }
 
-export default function ScheduleDetail({ days, onMealUpdate, readOnly = false }: ScheduleDetailProps) {
+export default function ScheduleDetail({ 
+  days, 
+  onMealUpdate, 
+  onMealDelete,
+  readOnly = false 
+}: ScheduleDetailProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [selectedMealType, setSelectedMealType] = useState<'lunch' | 'dinner' | null>(null);
@@ -31,6 +37,12 @@ export default function ScheduleDetail({ days, onMealUpdate, readOnly = false }:
     }
   };
 
+  const handleDeleteMeal = async (dayDate: string, mealType: 'lunch' | 'dinner') => {
+    if (onMealDelete) {
+      await onMealDelete(dayDate, mealType);
+    }
+  };
+
   return (
     <>
       <VStack align="start" spacing={4}>
@@ -45,14 +57,22 @@ export default function ScheduleDetail({ days, onMealUpdate, readOnly = false }:
                   {meal.mealType.toUpperCase()}: {meal.mainItem.title} + {meal.sideItem.title}
                 </Text>
                 {!readOnly && (
-                  <Button
-                    size="sm"
-                    colorScheme="blue"
-                    ml={2}
-                    onClick={() => handleEditMeal(day.date, meal.mealType, meal.mainItem.id, meal.sideItem.id)}
-                  >
-                    Edit
-                  </Button>
+                  <HStack spacing={2}>
+                    <Button
+                      size="sm"
+                      colorScheme="blue"
+                      onClick={() => handleEditMeal(day.date, meal.mealType, meal.mainItem.id, meal.sideItem.id)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      colorScheme="red"
+                      onClick={() => handleDeleteMeal(day.date, meal.mealType)}
+                    >
+                      Remove
+                    </Button>
+                  </HStack>
                 )}
               </Box>
             ))}

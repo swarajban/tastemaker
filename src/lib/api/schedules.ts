@@ -152,3 +152,16 @@ export async function updateScheduleMeal(
 
   if (error) throw error;
 }
+
+export async function deleteScheduleMeal(
+  scheduleDayId: string,
+  mealType: 'lunch' | 'dinner'
+): Promise<void> {
+  const { error } = await supabase
+    .from('schedule_meal')
+    .delete()
+    .eq('schedule_day_id', scheduleDayId)
+    .eq('meal_type', mealType);
+
+  if (error) throw error;
+}

@@ -186,6 +186,20 @@ export default function CreateSchedulePage() {
     );
   };
 
+  const handlePreviewMealDelete = async (dayDate: string, mealType: 'lunch' | 'dinner') => {
+    setPreview(prevPreview => 
+      prevPreview.map(day => {
+        if (day.date === dayDate) {
+          return {
+            ...day,
+            meals: day.meals.filter(meal => meal.mealType !== mealType)
+          };
+        }
+        return day;
+      })
+    );
+  };
+
   return (
     <Box p={4}>
       <Heading>Create Schedule</Heading>
@@ -242,6 +256,7 @@ export default function CreateSchedulePage() {
           <ScheduleDetail 
             days={preview} 
             onMealUpdate={handlePreviewMealUpdate}
+            onMealDelete={handlePreviewMealDelete}
           />
         </Box>
       )}
