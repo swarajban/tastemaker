@@ -16,6 +16,8 @@ import { createSchedule } from '../lib/api/schedules';
 import { generateSchedule, GeneratedDay } from '../lib/util/scheduleGenerator';
 import { getUserPreferences, UserPreferences } from '../lib/api/userPreferences';
 import { Tag, getUserTags } from '../lib/api/tags';
+import ScheduleDetail from '../components/schedule/ScheduleDetail';
+import { useNavigate } from 'react-router-dom';
 
 export default function CreateSchedulePage() {
   const nextMonday = getNextMonday();
@@ -33,6 +35,8 @@ export default function CreateSchedulePage() {
 
   const [userPrefs, setUserPrefs] = useState<UserPreferences | null>(null);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const daySlots: Record<string, Array<'lunch' | 'dinner'>> = {};
@@ -119,19 +123,26 @@ export default function CreateSchedulePage() {
     const userId = sessionResult.data?.session?.user?.id;
     if (!userId) return;
 
-    // Transform preview into data shape for createSchedule
-    const dayMeals = preview.map((day) => ({
-      dayDate: day.date,
-      meals: day.meals.map((m) => ({
-        mealType: m.mealType,
-        mainItemId: m.mainItem.id,
-        sideItemId: m.sideItem.id,
-      })),
-    }));
+    try {
+      // Transform preview into data shape for createSchedule
+      const dayMeals = preview.map((day) => ({
+        dayDate: day.date,
+        meals: day.meals.map((m) => ({
+          mealType: m.mealType,
+          mainItemId: m.mainItem.id,
+          sideItemId: m.sideItem.id,
+        })),
+      }));
 
-    const scheduleId = await createSchedule(userId, startDate, endDate, dayMeals);
-    console.log('Created schedule:', scheduleId);
-    // Optionally navigate away
+      const scheduleId = await createSchedule(userId, startDate, endDate, dayMeals);
+      console.log('Created schedule:', scheduleId);
+      
+      // Navigate to view schedules page after successful save
+      navigate('/schedules');
+    } catch (error) {
+      console.error('Error saving schedule:', error);
+      // You might want to show an error toast/message to the user here
+    }
   };
 
   return (
@@ -186,20 +197,8 @@ export default function CreateSchedulePage() {
 
       {preview.length > 0 && (
         <VStack mt={4} align="start">
-          {preview.map((day) => (
-            <Box key={day.date} p={2} borderWidth={1} borderRadius="md" w="100%">
-              <Text fontWeight="bold">
-                {new Date(day.date).toLocaleDateString('en-US', { weekday: 'long' })} - {day.date}
-              </Text>
-              {day.meals.map((meal) => (
-                <Text key={meal.mealType}>
-                  {meal.mealType.toUpperCase()}:
-                  {' '}
-                  {meal.mainItem.title} + {meal.sideItem.title}
-                </Text>
-              ))}
-            </Box>
-          ))}
+          <ScheduleDetail days={preview} />
+
           <Button onClick={handleSave} colorScheme="teal">
             Save Schedule
           </Button>

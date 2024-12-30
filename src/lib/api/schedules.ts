@@ -35,6 +35,8 @@ export async function createSchedule(
     }>;
   }[]
 ): Promise<string> {
+  console.log('Creating schedule with:', { userId, startDate, endDate, dayMeals });
+
   // 1) Create the schedule
   const { data: scheduleData, error: scheduleError } = await supabase
     .from('schedule')
@@ -43,24 +45,38 @@ export async function createSchedule(
       start_date: startDate,
       end_date: endDate,
     })
+    .select()
     .single();
-  if (scheduleError) throw scheduleError;
+
+  if (scheduleError) {
+    console.error('Error creating schedule:', scheduleError);
+    throw scheduleError;
+  }
+  console.log('Created schedule:', scheduleData);
 
   const scheduleId = scheduleData.id;
 
   // 2) Create schedule_day rows
   for (const day of dayMeals) {
+    console.log('Creating day:', day);
     const { data: dayData, error: dayError } = await supabase
       .from('schedule_day')
       .insert({
         schedule_id: scheduleId,
         day_date: day.dayDate,
       })
+      .select()
       .single();
-    if (dayError) throw dayError;
+
+    if (dayError) {
+      console.error('Error creating schedule day:', dayError);
+      throw dayError;
+    }
+    console.log('Created day:', dayData);
 
     // 3) Create schedule_meal rows
     for (const meal of day.meals) {
+      console.log('Creating meal:', meal);
       const { error: mealError } = await supabase
         .from('schedule_meal')
         .insert({
@@ -69,7 +85,12 @@ export async function createSchedule(
           main_item_id: meal.mainItemId,
           side_item_id: meal.sideItemId,
         });
-      if (mealError) throw mealError;
+
+      if (mealError) {
+        console.error('Error creating schedule meal:', mealError);
+        throw mealError;
+      }
+      console.log('Created meal successfully');
     }
   }
 

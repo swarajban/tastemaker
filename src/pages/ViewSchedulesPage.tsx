@@ -9,8 +9,11 @@ import {
   HStack,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-import { Schedule, getSchedulesForUser } from '../lib/api/schedules';
+import { Schedule, getSchedulesForUser, getScheduleById } from '../lib/api/schedules';
 import { supabase } from '../lib/supabaseClient';
+import ScheduleDetail from '../components/schedule/ScheduleDetail';
+import { GeneratedDay } from '../lib/util/scheduleGenerator';
+import { transformScheduleDataToGeneratedDays } from '../lib/util/scheduleDataTransform';
 
 export default function ViewSchedulesPage() {
   const navigate = useNavigate();
@@ -18,16 +21,16 @@ export default function ViewSchedulesPage() {
   const [loading, setLoading] = useState(true);
   const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(null);
 
+  const [selectedScheduleDays, setSelectedScheduleDays] = useState<GeneratedDay[]>([]);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
   useEffect(() => {
     async function loadSchedules() {
       setLoading(true);
       try {
         const sessionResult = await supabase.auth.getSession();
         const userId = sessionResult.data?.session?.user?.id;
-        if (!userId) {
-          setLoading(false);
-          return;
-        }
+        if (!userId) return;
         const data = await getSchedulesForUser(userId);
         setSchedules(data);
       } finally {
@@ -36,6 +39,25 @@ export default function ViewSchedulesPage() {
     }
     loadSchedules();
   }, []);
+
+  useEffect(() => {
+    async function loadScheduleDetail() {
+      if (!selectedScheduleId) return;
+      setLoadingDetail(true);
+      try {
+        const { schedule, days } = await getScheduleById(selectedScheduleId);
+
+        const newDays = await transformScheduleDataToGeneratedDays(days);
+
+        setSelectedScheduleDays(newDays);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingDetail(false);
+      }
+    }
+    loadScheduleDetail();
+  }, [selectedScheduleId]);
 
   const handleSelectSchedule = (scheduleId: string) => {
     setSelectedScheduleId(scheduleId);
@@ -76,8 +98,18 @@ export default function ViewSchedulesPage() {
 
           <Box flex="1" p={4} borderWidth={1} borderRadius="md">
             {selectedScheduleId ? (
-              <Text>Single schedule view for: {selectedScheduleId}</Text>
-              // You’d typically display detailed day/meal info here or in a separate component.
+              loadingDetail ? (
+                <Spinner />
+              ) : (
+                <>
+                  {selectedScheduleDays.length === 0 && (
+                    <Text>No meals found for this schedule.</Text>
+                  )}
+                  {selectedScheduleDays.length > 0 && (
+                    <ScheduleDetail days={selectedScheduleDays} />
+                  )}
+                </>
+              )
             ) : (
               <Text>Select a schedule on the left to view</Text>
             )}
