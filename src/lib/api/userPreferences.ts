@@ -4,8 +4,7 @@ import { supabase } from '../supabaseClient';
 export interface UserPreferences {
   id: string;
   user_id: string;
-  tag_restrictions: string[][]; 
-  // e.g. [["beans"], ["pork"]] => means "beans" can't appear twice in one day, "pork" can't appear twice, etc.
+  tag_restrictions: string[]; // Changed from string[][] to string[]
 }
 
 export async function getUserPreferences(userId: string): Promise<UserPreferences | null> {
@@ -24,7 +23,7 @@ export async function getUserPreferences(userId: string): Promise<UserPreference
   // If not found, create default preferences
   const defaultPreferences: Omit<UserPreferences, 'id'> = {
     user_id: userId,
-    tag_restrictions: [], // Default to empty restrictions
+    tag_restrictions: [], // Now it's string[] instead of string[][]
   };
 
   const { data: newData, error: insertError } = await supabase

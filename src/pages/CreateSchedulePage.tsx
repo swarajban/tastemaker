@@ -8,11 +8,14 @@ import {
   Text,
   FormControl,
   FormLabel,
-  Input
+  Input,
+  Checkbox
 } from '@chakra-ui/react';
 import { supabase } from '../lib/supabaseClient';
 import { createSchedule } from '../lib/api/schedules';
 import { generateSchedule, GeneratedDay } from '../lib/util/scheduleGenerator';
+import { getUserPreferences, UserPreferences } from '../lib/api/userPreferences';
+import { Tag, getUserTags } from '../lib/api/tags';
 
 export default function CreateSchedulePage() {
   const nextMonday = getNextMonday();
@@ -27,6 +30,9 @@ export default function CreateSchedulePage() {
   const [dayMealSlots, setDayMealSlots] = useState<Record<string, Array<'lunch' | 'dinner'>>>({});
 
   const [preview, setPreview] = useState<GeneratedDay[]>([]);
+
+  const [userPrefs, setUserPrefs] = useState<UserPreferences | null>(null);
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
 
   useEffect(() => {
     const daySlots: Record<string, Array<'lunch' | 'dinner'>> = {};
@@ -43,6 +49,56 @@ export default function CreateSchedulePage() {
     }
     setDayMealSlots(daySlots);
   }, [startDate, endDate]);
+
+  useEffect(() => {
+    async function loadTagData() {
+      const sessionResult = await supabase.auth.getSession();
+      const userId = sessionResult.data?.session?.user?.id;
+      if (!userId) return;
+
+      // Load user preferences
+      const prefs = await getUserPreferences(userId);
+      setUserPrefs(prefs);
+
+      // Load available tags
+      const tags = await getUserTags(userId);
+      setAvailableTags(tags);
+    }
+    loadTagData();
+  }, []);
+
+  const handleToggleTagRestriction = async (tagName: string) => {
+    if (!userPrefs) return;
+
+    const sessionResult = await supabase.auth.getSession();
+    const userId = sessionResult.data?.session?.user?.id;
+    if (!userId) return;
+
+    // Check if this tag is already restricted
+    const isCurrentlyRestricted = userPrefs.tag_restrictions.includes(tagName);
+
+    // Create new restrictions array
+    let newRestrictions: string[];
+    if (isCurrentlyRestricted) {
+      // Remove the restriction
+      newRestrictions = userPrefs.tag_restrictions.filter(tag => tag !== tagName);
+    } else {
+      // Add the restriction
+      newRestrictions = [...userPrefs.tag_restrictions, tagName];
+    }
+
+    // Update in Supabase
+    const { data, error } = await supabase
+      .from('user_preferences')
+      .update({ tag_restrictions: newRestrictions })
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (!error && data) {
+      setUserPrefs(data);
+    }
+  };
 
   const handlePreview = async () => {
     const sessionResult = await supabase.auth.getSession();
@@ -99,6 +155,30 @@ export default function CreateSchedulePage() {
           onChange={(e) => setEndDate(e.target.value)}
         />
       </FormControl>
+
+      {/* Tag Restrictions */}
+      <Box mt={6}>
+        <Text fontWeight="bold" mb={2}>Tag Restrictions</Text>
+        <Text fontSize="sm" color="gray.600" mb={4}>
+          Select tags that should not appear more than once per day
+        </Text>
+        
+        <VStack align="start" spacing={2}>
+          {availableTags.map((tag) => {
+            const isRestricted = userPrefs?.tag_restrictions.includes(tag.name);
+            
+            return (
+              <Checkbox
+                key={tag.id}
+                isChecked={isRestricted}
+                onChange={() => handleToggleTagRestriction(tag.name)}
+              >
+                {tag.name}
+              </Checkbox>
+            );
+          })}
+        </VStack>
+      </Box>
 
       <Button onClick={handlePreview} colorScheme="blue" mt={4}>
         Preview Schedule

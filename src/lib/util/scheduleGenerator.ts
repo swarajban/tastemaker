@@ -24,7 +24,7 @@ export interface GeneratedDay {
  * (potentially from user_preferences or user input)
  */
 export interface SchedulePreferences {
-  tagRestrictions: string[][]; 
+  tagRestrictions: string[]; 
   // e.g. [["beans"], ["pork"]] => means "beans" can't appear twice in the same day, "pork" can't appear twice, etc.
   // If the user has more complex restrictions, you might represent them differently.
 }
@@ -120,14 +120,8 @@ function pickItem(
 ): MealItemWithTags | null {
   // 1) Filter out items whose restricted tags are already used up today
   const filtered = candidates.filter((item) => {
-    // For each restricted tag group (like ["beans"]), that means "don't use that tag more than once a day"
-    // So if item.tags includes "beans", we check if dayTagsUsed["beans"] >= 1
-    for (const restriction of prefs.tagRestrictions) {
-      // If restriction is ["beans"], then if item has "beans" 
-      // we check if dayTagsUsed["beans"] is already >=1
-      // This example assumes each restriction array has only 1 tag inside it,
-      // as you indicated. If it had multiple, you'd interpret it differently.
-      const restrictedTag = restriction[0];
+    // For each restricted tag, check if it's already been used today
+    for (const restrictedTag of prefs.tagRestrictions) {
       if (item.tags.includes(restrictedTag)) {
         const usageSoFar = dayTagsUsed[restrictedTag] || 0;
         if (usageSoFar >= 1) {
