@@ -15,8 +15,13 @@ import { createSchedule } from '../lib/api/schedules';
 import { generateSchedule, GeneratedDay } from '../lib/util/scheduleGenerator';
 
 export default function CreateSchedulePage() {
-  const [startDate, setStartDate] = useState('2024-01-01');
-  const [endDate, setEndDate] = useState('2024-01-07');
+  const nextMonday = getNextMonday();
+  const nextSunday = new Date(nextMonday);
+  nextSunday.setDate(nextSunday.getDate() + 6);
+  const endDateStr = nextSunday.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+
+  const [startDate, setStartDate] = useState(nextMonday);
+  const [endDate, setEndDate] = useState(endDateStr);
 
   // For each date, which meal slots we want (lunch/dinner)
   const [dayMealSlots, setDayMealSlots] = useState<Record<string, Array<'lunch' | 'dinner'>>>({});
@@ -139,4 +144,17 @@ function getDateRange(start: string, end: string): string[] {
   }
 
   return result;
+}
+
+function getNextMonday(): string {
+  const today = new Date();
+  const daysUntilMonday = (8 - today.getDay()) % 7; // Days until next Monday (1=Monday, so we use 8)
+  const nextMonday = new Date(today);
+  nextMonday.setDate(today.getDate() + daysUntilMonday);
+  
+  // Format as YYYY-MM-DD
+  const yyyy = nextMonday.getFullYear();
+  const mm = String(nextMonday.getMonth() + 1).padStart(2, '0');
+  const dd = String(nextMonday.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
