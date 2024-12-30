@@ -9,7 +9,7 @@ import {
   HStack,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-import { Schedule, getSchedulesForUser, getScheduleById, updateScheduleMeal, deleteScheduleMeal } from '../lib/api/schedules';
+import { Schedule, getSchedulesForUser, getScheduleById, updateScheduleMeal, deleteScheduleMeal, addScheduleMeal } from '../lib/api/schedules';
 import { supabase } from '../lib/supabaseClient';
 import ScheduleDetail from '../components/schedule/ScheduleDetail';
 import { GeneratedDay } from '../lib/util/scheduleGenerator';
@@ -119,6 +119,32 @@ export default function ViewSchedulesPage() {
     }
   };
 
+  const handleMealAdd = async (dayDate: string, mealType: 'lunch' | 'dinner', mainItemId: string, sideItemId: string) => {
+    if (!selectedScheduleId) return;
+
+    try {
+      // Find the schedule_day for this date
+      const { data: dayData } = await supabase
+        .from('schedule_day')
+        .select('id')
+        .eq('schedule_id', selectedScheduleId)
+        .eq('day_date', dayDate)
+        .single();
+
+      if (!dayData) throw new Error('Schedule day not found');
+
+      // Add the new meal
+      await addScheduleMeal(dayData.id, mealType, mainItemId, sideItemId);
+
+      // Reload the schedule detail
+      const { schedule, days } = await getScheduleById(selectedScheduleId);
+      const newDays = await transformScheduleDataToGeneratedDays(days);
+      setSelectedScheduleDays(newDays);
+    } catch (err) {
+      console.error('Error adding meal:', err);
+    }
+  };
+
   return (
     <Box p={4}>
       <Heading mb={4}>Your Schedules</Heading>
@@ -162,6 +188,7 @@ export default function ViewSchedulesPage() {
                       days={selectedScheduleDays} 
                       onMealUpdate={handleMealUpdate}
                       onMealDelete={handleMealDelete}
+                      onMealAdd={handleMealAdd}
                     />
                   )}
                 </>

@@ -200,6 +200,40 @@ export default function CreateSchedulePage() {
     );
   };
 
+  const handlePreviewMealAdd = async (
+    dayDate: string,
+    mealType: 'lunch' | 'dinner',
+    mainItemId: string,
+    sideItemId: string
+  ) => {
+    // Get the new meal items
+    const sessionResult = await supabase.auth.getSession();
+    const userId = sessionResult.data?.session?.user?.id;
+    if (!userId) return;
+
+    const items = await getUserMealItemsWithTags(userId);
+    const mainItem = items.find(item => item.id === mainItemId);
+    const sideItem = items.find(item => item.id === sideItemId);
+
+    if (!mainItem || !sideItem) return;
+
+    setPreview(prevPreview => 
+      prevPreview.map(day => {
+        if (day.date === dayDate) {
+          return {
+            ...day,
+            meals: [...day.meals, {
+              mealType,
+              mainItem,
+              sideItem
+            }]
+          };
+        }
+        return day;
+      })
+    );
+  };
+
   return (
     <Box p={4}>
       <Heading>Create Schedule</Heading>
@@ -257,6 +291,7 @@ export default function CreateSchedulePage() {
             days={preview} 
             onMealUpdate={handlePreviewMealUpdate}
             onMealDelete={handlePreviewMealDelete}
+            onMealAdd={handlePreviewMealAdd}
           />
         </Box>
       )}

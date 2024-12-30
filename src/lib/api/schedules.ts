@@ -165,3 +165,21 @@ export async function deleteScheduleMeal(
 
   if (error) throw error;
 }
+
+export async function addScheduleMeal(
+  scheduleDayId: string,
+  mealType: 'lunch' | 'dinner',
+  mainItemId: string,
+  sideItemId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('schedule_meal')
+    .insert({
+      schedule_day_id: scheduleDayId,
+      meal_type: mealType,
+      main_item_id: mainItemId,
+      side_item_id: sideItemId
+    });
+
+  if (error) throw error;
+}
