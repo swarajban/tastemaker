@@ -108,7 +108,9 @@ export default function CreateSchedulePage() {
         <VStack mt={4} align="start">
           {preview.map((day) => (
             <Box key={day.date} p={2} borderWidth={1} borderRadius="md" w="100%">
-              <Text fontWeight="bold">{day.date}</Text>
+              <Text fontWeight="bold">
+                {new Date(day.date).toLocaleDateString('en-US', { weekday: 'long' })} - {day.date}
+              </Text>
               {day.meals.map((meal) => (
                 <Text key={meal.mealType}>
                   {meal.mealType.toUpperCase()}:
