@@ -12,6 +12,7 @@ export interface ScheduleDay {
   id: string;
   schedule_id: string;
   day_date: string;
+  schedule_meal: ScheduleMeal[];
 }
 
 export interface ScheduleMeal {

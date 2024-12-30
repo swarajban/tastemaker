@@ -33,24 +33,30 @@ export async function transformScheduleDataToGeneratedDays(
     const generatedMeals: GeneratedMeal[] = day.schedule_meal.map((m) => {
       const mainItemInfo =
         allMealItems.find((i) => i.id === m.main_item_id) ||
-        // Fallback if not found
+        // Fallback with required properties
         {
           id: m.main_item_id,
           title: 'Unknown',
           tags: [],
           type: 'main',
           effort: 1,
+          user_id: userId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         };
 
       const sideItemInfo =
         allMealItems.find((i) => i.id === m.side_item_id) ||
-        // Fallback if not found
+        // Fallback with required properties
         {
           id: m.side_item_id,
           title: 'Unknown',
           tags: [],
           type: 'side',
           effort: 1,
+          user_id: userId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         };
 
       return {
