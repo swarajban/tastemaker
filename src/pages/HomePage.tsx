@@ -1,17 +1,34 @@
-import React from 'react';
-import { Box, Button, Heading, Text } from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import { Box, Button, Heading, Text, Spinner } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  // This returns a promise, so typically you'd handle with a useEffect/hook. 
-  // For simplicity, we’ll just demonstrate logic:
-  const sessionPromise = supabase.auth.getSession();
+  const [loading, setLoading] = useState(true);
 
-  const handleLoginClick = async () => {
+  useEffect(() => {
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate('/schedules');
+      }
+      setLoading(false);
+    }
+    checkSession();
+  }, [navigate]);
+
+  const handleLoginClick = () => {
     navigate('/login');
   };
+
+  if (loading) {
+    return (
+      <Box p={8} display="flex" justifyContent="center">
+        <Spinner />
+      </Box>
+    );
+  }
 
   return (
     <Box p={8}>
