@@ -1,3 +1,3 @@
-const publicSiteUrl = import.meta.env.PUBLIC_SITE_URL as string;
+const publicSiteUrl = import.meta.env.VITE_PUBLIC_SITE_URL as string;
 
 export { publicSiteUrl };
