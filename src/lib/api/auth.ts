@@ -1,11 +1,10 @@
 import { supabase } from '../supabaseClient';
-import { publicSiteUrl } from '../config';
 
 export async function signInWithMagicLink(email: string) {
   const { data, error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${publicSiteUrl}/schedules`
+      emailRedirectTo: `${window.location.origin}/schedules`
     }
   });
   if (error) throw error;
