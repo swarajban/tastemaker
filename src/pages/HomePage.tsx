@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, Heading, Text, Spinner } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import logo from '../assets/logo-full.png';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -32,11 +33,13 @@ export default function HomePage() {
 
   return (
     <Box p={8}>
-      <Heading>Tastemaker</Heading>
-      <Text mt={4}>Plan your meals with ease.</Text>
-      <Button mt={4} onClick={handleLoginClick} colorScheme="teal">
-        Login
-      </Button>
+      <Box maxW="600px" mx="auto" textAlign="center">
+        <img src={logo} alt="Tastemaker Logo" style={{ width: '100%', height: 'auto', marginBottom: '2rem' }} />
+        <Text mt={4}>Plan your meals with ease.</Text>
+        <Button mt={4} onClick={handleLoginClick} colorScheme="teal">
+          Login
+        </Button>
+      </Box>
     </Box>
   );
 }
