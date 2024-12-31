@@ -10,6 +10,7 @@ import {
   VStack,
   HStack,
   Badge,
+  useToast,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
@@ -17,6 +18,7 @@ import { getUserMealItemsWithTags, MealItemWithTags, deleteMealItem } from '../l
 
 export default function ViewMealItemsPage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [items, setItems] = useState<MealItemWithTags[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,8 +56,27 @@ export default function ViewMealItemsPage() {
     try {
       await deleteMealItem(itemId);
       setItems(items.filter(item => item.id !== itemId));
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error removing meal item:', err);
+      
+      // Check for the specific database constraint error
+      if (err?.code === '23502') {
+        toast({
+          title: 'Cannot Delete Item',
+          description: 'This meal item is currently being used in a schedule. Please remove it from all schedules first.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to remove meal item. Please try again.',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     }
   };
 
