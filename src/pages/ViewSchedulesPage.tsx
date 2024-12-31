@@ -165,6 +165,18 @@ export default function ViewSchedulesPage() {
     }
   };
 
+  const formatDateRange = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return `${start.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    })} - ${end.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    })}`;
+  };
+
   return (
     <Box p={4}>
       <Heading mb={4}>Your Schedules</Heading>
@@ -190,7 +202,7 @@ export default function ViewSchedulesPage() {
               >
                 <HStack justify="space-between" width="100%">
                   <Text fontWeight="bold">
-                    {sched.start_date} - {sched.end_date}
+                    {formatDateRange(sched.start_date, sched.end_date)}
                   </Text>
                   <Button
                     size="sm"
