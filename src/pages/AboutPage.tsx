@@ -14,10 +14,10 @@ export default function AboutPage() {
 
       <Heading size="lg" mt={8} mb={4}>Stack</Heading>
       <Text>
-        Tastemaker is built in React, TypeScript, Chakra UI, and Supabase. We use
-        Supabase for both authentication and database. The app is hosted on Netlify.
-        100% of the code was written by Cursor/Sonnet/OpenAI generations; I didn't 
-        write a single line of code myself.
+        Tastemaker is built with React, TypeScript, Chakra UI, and Supabase. We use
+        Supabase for both authentication and database. The app is hosted on Netlify. and
+        has no custom backend. 100% of the code was written by Cursor/Sonnet/OpenAI
+        generations; I didn't write a single line of code myself.
       </Text>
     </Box>
   );

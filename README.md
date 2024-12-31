@@ -9,7 +9,7 @@ for each meal and generate schedules that can prevent multiple meals with same
 tag from being scheduled on the same day, e.g. don't have potatoes twice in a day.
 
 ## Stack
-Tastemaker is built in React, TypeScript, Chakra UI, and Supabase. We use
-Supabase for both authentication and database. The app is hosted on Netlify.
-100% of the code was written by Cursor/Sonnet/OpenAI generations; I didn't 
-write a single line of code myself.
+Tastemaker is built with React, TypeScript, Chakra UI, and Supabase. We use
+Supabase for both authentication and database. The app is hosted on Netlify. and
+has no custom backend. 100% of the code was written by Cursor/Sonnet/OpenAI
+generations; I didn't write a single line of code myself.
