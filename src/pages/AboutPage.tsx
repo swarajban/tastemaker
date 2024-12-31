@@ -6,15 +6,18 @@ export default function AboutPage() {
     <Box p={8}>
       <Heading mb={4}>About Tastemaker</Heading>
       <Text fontSize="lg">
-        Tastemaker is a modern meal planning application that helps both newbies 
-        and experienced home chefs plan weekly or daily meals. 
-        By integrating with Supabase and leveraging your stored preferences, 
-        Tastemaker makes it easy to discover new meals, manage your own recipes, 
-        and automatically generate weekly schedules.
+        Tastemaker is an app to help plan which meals to cook for the week. Simply add your
+        meal items and the app will generate a schedule for you. You can specify tags
+        for each meal and generate schedules that can prevent multiple meals with same
+        tag from being scheduled on the same day, e.g. don't have potatoes twice in a day.
       </Text>
-      <Text mt={4}>
-        Whether you’re looking to organize balanced meals, reduce food waste, 
-        or explore new cooking ideas, Tastemaker has features to help streamline your process.
+
+      <Heading size="lg" mt={8} mb={4}>Stack</Heading>
+      <Text>
+        Tastemaker is built in React, TypeScript, Chakra UI, and Supabase. We use
+        Supabase for both authentication and database. The app is hosted on Netlify.
+        100% of the code was written by Cursor/Sonnet/OpenAI generations; I didn't 
+        write a single line of code myself.
       </Text>
     </Box>
   );
