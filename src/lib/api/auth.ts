@@ -1,13 +1,12 @@
 import { supabase } from '../supabaseClient';
 
-export async function signInWithEmail(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw error;
-  return data;
-}
-
-export async function signUpWithEmail(email: string, password: string) {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+export async function signInWithMagicLink(email: string) {
+  const { data, error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${window.location.origin}/schedules`
+    }
+  });
   if (error) throw error;
   return data;
 }

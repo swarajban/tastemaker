@@ -7,64 +7,71 @@ import {
   FormLabel,
   Input,
   Button,
-  Text
+  Text,
+  Alert,
+  AlertIcon,
 } from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
-import { signInWithEmail } from '../lib/api/auth'; 
-import { supabase } from '../lib/supabaseClient';
+import { signInWithMagicLink } from '../lib/api/auth';
 
 export default function LoginPage() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMsg('');
+    
     try {
-      // Attempt login
-      await signInWithEmail(email, password);
-
-      // If successful, supabase automatically sets the auth session.
-      // We can check or simply navigate to /schedules.
-      navigate('/schedules');
+      await signInWithMagicLink(email);
+      setEmailSent(true);
     } catch (error: any) {
-      // handle error from supabase
-      setErrorMsg(error.message || 'Login failed. Please try again.');
+      setErrorMsg(error.message || 'Failed to send login link. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <Box p={8} maxWidth="400px" margin="0 auto">
       <Heading mb={4}>Login</Heading>
-      <form onSubmit={handleSubmit}>
-        <FormControl mb={4}>
-          <FormLabel>Email</FormLabel>
-          <Input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </FormControl>
-        <FormControl mb={4}>
-          <FormLabel>Password</FormLabel>
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </FormControl>
-        {errorMsg && (
-          <Text color="red.500" mb={2}>
-            {errorMsg}
-          </Text>
-        )}
-        <Button type="submit" colorScheme="teal">
-          Log In
-        </Button>
-      </form>
+      
+      {emailSent ? (
+        <Alert status="success" mb={4}>
+          <AlertIcon />
+          Check your email for the login link!
+        </Alert>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          <FormControl mb={4}>
+            <FormLabel>Email</FormLabel>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </FormControl>
+
+          {errorMsg && (
+            <Text color="red.500" mb={2}>
+              {errorMsg}
+            </Text>
+          )}
+
+          <Button 
+            type="submit" 
+            colorScheme="teal" 
+            width="100%"
+            isLoading={isSubmitting}
+            loadingText="Sending..."
+          >
+            Send Login Link
+          </Button>
+        </form>
+      )}
     </Box>
   );
 }
