@@ -11,28 +11,28 @@ import ViewMealItemsPage from '../pages/ViewMealItemsPage';
 import CreateSchedulePage from '../pages/CreateSchedulePage';
 import PrivateRoute from './PrivateRoute';
 
-
 export function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes (no Layout) */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
+        {/* Wrap everything in the Layout */}
+        <Route path="/" element={<Layout />}>
+          {/* Public routes */}
+          <Route index element={<HomePage />} />
+          <Route path="login" element={<LoginPage />} />
 
-        {/* Private routes under the Layout */}
-        <Route element={<PrivateRoute />}>
-          <Route path="/" element={<Layout />}>
+          {/* Private routes */}
+          <Route element={<PrivateRoute />}>
             <Route path="meal-items" element={<ViewMealItemsPage />} />
             <Route path="add-meal-item" element={<AddMealItemPage />} />
             <Route path="edit-meal-item/:mealItemId" element={<EditMealItemPage />} />
             <Route path="schedules" element={<ViewSchedulesPage />} />
             <Route path="create-schedule" element={<CreateSchedulePage />} />
           </Route>
+
+          {/* 404 fallback */}
+          <Route path="*" element={<HomePage />} />
         </Route>
-        
-        {/* Optional: 404 fallback */}
-        <Route path="*" element={<HomePage />} />
       </Routes>
     </BrowserRouter>
   );

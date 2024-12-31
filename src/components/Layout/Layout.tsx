@@ -1,7 +1,7 @@
 // src/components/Layout/Layout.tsx
 
-import React from 'react';
-import { Outlet, Link as RouterLink } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Outlet, Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Box,
   Flex,
@@ -18,31 +18,58 @@ import { signOut } from '../../lib/api/auth';
 export default function Layout() {
   const { colorMode, toggleColorMode } = useColorMode();
   const navBg = useColorModeValue('gray.100', 'gray.900');
+  const navigate = useNavigate();
+
+  const [session, setSession] = useState<any>(null);
+
+  // Fetch session on mount
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Subscribe to auth changes (optional)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
-    window.location.href = '/'; // or navigate() to home
+    navigate('/');
+  };
+
+  const handleLogin = () => {
+    navigate('/login');
   };
 
   return (
     <Flex direction="column" minH="100vh">
-      {/* Top Nav Bar */}
       <Box bg={navBg} px={4} py={2} borderBottomWidth={1}>
         <Flex align="center">
-          {/* Logo or app name */}
           <Heading size="md" mr={4}>
             Tastemaker
           </Heading>
 
-          {/* Nav links */}
-          <Link as={RouterLink} to="/meal-items" mr={4}>
-            Meal Items
-          </Link>
-          <Link as={RouterLink} to="/schedules" mr={4}>
-            Schedules
-          </Link>
+          {/* If user is logged in, show meal & schedule links */}
+          {session && (
+            <>
+              <Link as={RouterLink} to="/meal-items" mr={4}>
+                Meal Items
+              </Link>
+              <Link as={RouterLink} to="/schedules" mr={4}>
+                Schedules
+              </Link>
+            </>
+          )}
 
-          {/* Expand spacer so next items go to the right */}
           <Spacer />
 
           {/* Toggle dark mode */}
@@ -50,19 +77,23 @@ export default function Layout() {
             {colorMode === 'light' ? 'Dark' : 'Light'}
           </Button>
 
-          {/* Logout */}
-          <Button size="sm" colorScheme="red" onClick={handleLogout}>
-            Logout
-          </Button>
+          {/* If session is active, show Logout; otherwise, show Login */}
+          {session ? (
+            <Button size="sm" colorScheme="red" onClick={handleLogout}>
+              Logout
+            </Button>
+          ) : (
+            <Button size="sm" colorScheme="teal" onClick={handleLogin}>
+              Login
+            </Button>
+          )}
         </Flex>
       </Box>
 
-      {/* The main content area (child routes) */}
       <Box flex="1">
         <Outlet />
       </Box>
 
-      {/* Optionally a footer */}
       <Box as="footer" bg={navBg} p={4} borderTopWidth={1} textAlign="center">
         © 2024 Tastemaker
       </Box>
