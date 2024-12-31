@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Heading, Text } from '@chakra-ui/react';
+import { Box, Heading, Text, Link } from '@chakra-ui/react';
 
 export default function AboutPage() {
   return (
@@ -17,7 +17,7 @@ export default function AboutPage() {
         Tastemaker is built with React, TypeScript, Chakra UI, and Supabase. We use
         Supabase for both authentication and database. The app is hosted on Netlify. and
         has no custom backend. 100% of the code was written by Cursor/Sonnet/OpenAI
-        generations; I didn't write a single line of code myself.
+        generations; I didn't write a single line of code <Link color="blue.500" href="https://github.com/swarajban/" isExternal>myself</Link>.
       </Text>
     </Box>
   );

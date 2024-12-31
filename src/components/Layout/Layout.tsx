@@ -100,7 +100,7 @@ export default function Layout() {
       </Box>
 
       <Box as="footer" bg={navBg} p={4} borderTopWidth={1} textAlign="center">
-        © 2024 Tastemaker
+        © {new Date().getFullYear()} Tastemaker. Made by SB in SF.
       </Box>
     </Flex>
   );
