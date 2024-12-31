@@ -7,6 +7,7 @@ import {
   Button,
   Spinner,
   HStack,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { Schedule, getSchedulesForUser, getScheduleById, updateScheduleMeal, deleteScheduleMeal, addScheduleMeal, deleteSchedule } from '../lib/api/schedules';
@@ -195,13 +196,18 @@ export default function ViewSchedulesPage() {
                 p={2}
                 borderWidth={1}
                 borderRadius="md"
-                bg={sched.id === selectedScheduleId ? 'gray.100' : 'white'}
+                bg={sched.id === selectedScheduleId 
+                  ? useColorModeValue('gray.200', 'gray.600')
+                  : useColorModeValue('white', 'gray.700')}
                 onClick={() => handleSelectSchedule(sched.id)}
                 cursor="pointer"
                 w="100%"
               >
                 <HStack justify="space-between" width="100%">
-                  <Text fontWeight="bold">
+                  <Text 
+                    fontWeight="bold" 
+                    color={useColorModeValue('gray.800', 'white')}
+                  >
                     {formatDateRange(sched.start_date, sched.end_date)}
                   </Text>
                   <Button
