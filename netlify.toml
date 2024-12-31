@@ -12,4 +12,4 @@
 [[headers]]
     for = "/*"
     [headers.values]
-        Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.supabase.co; connect-src 'self' https://*.supabase.co; font-src 'self' data:; frame-ancestors 'none';"
+        Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://scripts.simpleanalyticscdn.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.supabase.co https://queue.simpleanalyticscdn.com https://simpleanalyticsbadges.com; connect-src 'self' https://*.supabase.co https://queue.simpleanalyticscdn.com; font-src 'self' data:; frame-ancestors 'none';"
