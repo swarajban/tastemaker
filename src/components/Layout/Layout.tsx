@@ -52,9 +52,11 @@ export default function Layout() {
     <Flex direction="column" minH="100vh">
       <Box bg={navBg} px={4} py={2} borderBottomWidth={1}>
         <Flex align="center">
-          <Heading size="md" mr={4}>
-            Tastemaker
-          </Heading>
+          <Link as={RouterLink} to="/" _hover={{ textDecoration: 'none' }}>
+            <Heading size="md" mr={4}>
+              Tastemaker
+            </Heading>
+          </Link>
 
           {/* Always show About */}
           <Link as={RouterLink} to="/about" mr={4}>
