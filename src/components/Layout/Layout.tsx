@@ -22,20 +22,18 @@ export default function Layout() {
 
   const [session, setSession] = useState<any>(null);
 
-  // Fetch session on mount
+  // Handle session on mount
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
 
-    // Subscribe to auth changes (optional)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
 
-    // Cleanup on unmount
     return () => {
       subscription.unsubscribe();
     };
@@ -58,7 +56,12 @@ export default function Layout() {
             Tastemaker
           </Heading>
 
-          {/* If user is logged in, show meal & schedule links */}
+          {/* Always show About */}
+          <Link as={RouterLink} to="/about" mr={4}>
+            About
+          </Link>
+
+          {/* Show Meal Items & Schedules only if user is logged in */}
           {session && (
             <>
               <Link as={RouterLink} to="/meal-items" mr={4}>
@@ -77,7 +80,7 @@ export default function Layout() {
             {colorMode === 'light' ? 'Dark' : 'Light'}
           </Button>
 
-          {/* If session is active, show Logout; otherwise, show Login */}
+          {/* Show logout if logged in, otherwise login */}
           {session ? (
             <Button size="sm" colorScheme="red" onClick={handleLogout}>
               Logout

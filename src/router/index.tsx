@@ -9,19 +9,20 @@ import AddMealItemPage from '../pages/AddMealItemPage';
 import EditMealItemPage from '../pages/EditMealItemPage';
 import ViewMealItemsPage from '../pages/ViewMealItemsPage';
 import CreateSchedulePage from '../pages/CreateSchedulePage';
+import AboutPage from '../pages/AboutPage';
 import PrivateRoute from './PrivateRoute';
 
 export function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Wrap everything in the Layout */}
         <Route path="/" element={<Layout />}>
           {/* Public routes */}
           <Route index element={<HomePage />} />
           <Route path="login" element={<LoginPage />} />
+          <Route path="about" element={<AboutPage />} />
 
-          {/* Private routes */}
+          {/* Protected routes */}
           <Route element={<PrivateRoute />}>
             <Route path="meal-items" element={<ViewMealItemsPage />} />
             <Route path="add-meal-item" element={<AddMealItemPage />} />
