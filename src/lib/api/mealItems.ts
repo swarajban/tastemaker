@@ -46,6 +46,7 @@ export async function createMealItem(
       type,
       effort,
     })
+    .select()
     .single();
 
   if (mealItemError) throw mealItemError;
