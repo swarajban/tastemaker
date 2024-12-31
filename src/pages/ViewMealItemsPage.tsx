@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { getUserMealItemsWithTags, MealItemWithTags } from '../lib/api/mealItems';
+import { getUserMealItemsWithTags, MealItemWithTags, deleteMealItem } from '../lib/api/mealItems';
 
 export default function ViewMealItemsPage() {
   const navigate = useNavigate();
@@ -48,6 +48,15 @@ export default function ViewMealItemsPage() {
 
   const handleEditMealItem = (itemId: string) => {
     navigate(`/edit-meal-item/${itemId}`);
+  };
+
+  const handleRemoveMealItem = async (itemId: string) => {
+    try {
+      await deleteMealItem(itemId);
+      setItems(items.filter(item => item.id !== itemId));
+    } catch (err) {
+      console.error('Error removing meal item:', err);
+    }
   };
 
   return (
@@ -88,13 +97,22 @@ export default function ViewMealItemsPage() {
                       </HStack>
                     )}
                   </Box>
-                  <Button
-                    size="sm"
-                    colorScheme="blue"
-                    onClick={() => handleEditMealItem(item.id)}
-                  >
-                    Edit
-                  </Button>
+                  <HStack>
+                    <Button
+                      size="sm"
+                      colorScheme="blue"
+                      onClick={() => handleEditMealItem(item.id)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      colorScheme="red"
+                      onClick={() => handleRemoveMealItem(item.id)}
+                    >
+                      Remove
+                    </Button>
+                  </HStack>
                 </HStack>
               </Box>
             ))
