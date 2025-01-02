@@ -34,10 +34,13 @@ export default function AboutPage() {
 
       <Heading size="lg" mt={8} mb={4}>Roadmap</Heading>
       <Text>
-        For feature ideas, please use our <Link color="blue.500" href="https://github.com/swarajban/tastemaker/issues" isExternal>GitHub issues</Link> page.
+        For feature ideas, please use this <Link color="blue.500" href="https://github.com/swarajban/tastemaker/issues" isExternal>GitHub issues</Link> page.
         <br />
         <br />
-        We are tracking progress on ideas on our <Link color="blue.500" href="https://github.com/users/swarajban/projects/2" isExternal>GitHub project board</Link>.
+        We are tracking progress on ideas on this <Link color="blue.500" href="https://github.com/users/swarajban/projects/2" isExternal>GitHub project board</Link>.
+        <br />
+        <br />
+        Feel free to contact me at <Link color="blue.500" href="mailto:hello@tastemaker.cooking" isExternal>hello@tastemaker.cooking</Link> with any questions or feedback.
       </Text>
 
       <Heading size="lg" mt={8} mb={4}>Stack</Heading>
@@ -46,7 +49,12 @@ export default function AboutPage() {
         Supabase for both authentication and database. The app is hosted on Netlify. and
         has no custom backend. 100% of the code was written by Cursor/Sonnet/OpenAI
         generations; I didn't write a single line of code <Link color="blue.500" href="https://github.com/swarajban/" isExternal>myself</Link>.
+
+        <br />
+        <br />
+        All the code is available on <Link color="blue.500" href="https://github.com/swarajban/tastemaker" isExternal>GitHub</Link>.
       </Text>
+
     </Box>
   );
 } 
