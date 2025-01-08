@@ -87,7 +87,6 @@ export default function ViewMealItemsPage() {
     if (!file) return;
 
     try {
-      // Read file content
       const text = await file.text();
       const mealItems = parseMealItemsCsv(text);
       
@@ -95,25 +94,40 @@ export default function ViewMealItemsPage() {
       const userId = sessionResult.data?.session?.user?.id;
       if (!userId) return;
 
-      // Create all items
-      const existingTags = await getUserTags(userId);
+      // Get existing tags once at the start
+      let existingTags = await getUserTags(userId);
       
       for (const item of mealItems) {
-        // First, ensure all tags exist and get their IDs
         const tagIds: string[] = [];
         for (const tagName of item.tags) {
-          // Try to find existing tag
-          
-          let tagId = existingTags.find(t => 
+          // Case-insensitive search for existing tag
+          let tag = existingTags.find(t => 
             t.name.toLowerCase() === tagName.toLowerCase()
-          )?.id;
+          );
 
           // Create new tag if it doesn't exist
-          if (!tagId) {
-            const newTag = await createTag(userId, tagName);
-            tagId = newTag.id;
+          if (!tag) {
+            try {
+              const newTag = await createTag(userId, tagName);
+              tag = newTag;
+              // Add to existing tags to prevent duplicate creation attempts
+              existingTags.push(newTag);
+            } catch (tagError: any) {
+              // If tag creation failed due to duplicate, fetch the existing tag
+              if (tagError?.code === '23505') {
+                existingTags = await getUserTags(userId); // Refresh tags list
+                tag = existingTags.find(t => 
+                  t.name.toLowerCase() === tagName.toLowerCase()
+                );
+              } else {
+                throw tagError;
+              }
+            }
           }
-          tagIds.push(tagId);
+          
+          if (tag) {
+            tagIds.push(tag.id);
+          }
         }
 
         // Create the meal item with tags
