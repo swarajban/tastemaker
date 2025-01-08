@@ -1,8 +1,5 @@
 [build.environment]
     NODE_ENV = "23.5.0"
-    NETLIFY_SKIP_PYTHON = "true"
-    NETLIFY_SKIP_GO = "true"
-    NETLIFY_SKIP_RUBY = "true"
 
 [[redirects]]
     from = "/*"
