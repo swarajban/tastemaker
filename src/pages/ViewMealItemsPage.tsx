@@ -14,7 +14,9 @@ import {
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { getUserMealItemsWithTags, MealItemWithTags, deleteMealItem } from '../lib/api/mealItems';
+import { getUserMealItemsWithTags, MealItemWithTags, deleteMealItem, createMealItem } from '../lib/api/mealItems';
+import { parseMealItemsCsv } from '../lib/util/csvParser';
+import { Tag, getUserTags, createTag } from '../lib/api/tags';
 
 export default function ViewMealItemsPage() {
   const navigate = useNavigate();
@@ -80,12 +82,102 @@ export default function ViewMealItemsPage() {
     }
   };
 
+  async function handleCsvImport(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      // Read file content
+      const text = await file.text();
+      const mealItems = parseMealItemsCsv(text);
+      
+      const sessionResult = await supabase.auth.getSession();
+      const userId = sessionResult.data?.session?.user?.id;
+      if (!userId) return;
+
+      // Create all items
+      const existingTags = await getUserTags(userId);
+      
+      for (const item of mealItems) {
+        // First, ensure all tags exist and get their IDs
+        const tagIds: string[] = [];
+        for (const tagName of item.tags) {
+          // Try to find existing tag
+          
+          let tagId = existingTags.find(t => 
+            t.name.toLowerCase() === tagName.toLowerCase()
+          )?.id;
+
+          // Create new tag if it doesn't exist
+          if (!tagId) {
+            const newTag = await createTag(userId, tagName);
+            tagId = newTag.id;
+          }
+          tagIds.push(tagId);
+        }
+
+        // Create the meal item with tags
+        await createMealItem(
+          userId,
+          {
+            title: item.name,
+            notes: item.notes,
+            type: item.type,
+            effort: item.effort,
+          },
+          tagIds
+        );
+      }
+
+      // Refresh the list
+      const updatedItems = await getUserMealItemsWithTags(userId);
+      setItems(updatedItems);
+
+      toast({
+        title: 'Import Successful',
+        description: `Imported ${mealItems.length} meal items`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Error importing CSV:', error);
+      toast({
+        title: 'Import Failed',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+
+    // Clear the file input
+    event.target.value = '';
+  }
+
   return (
     <Box p={4}>
       <Heading mb={4}>Your Meal Items</Heading>
-      <Button onClick={handleAddMealItem} colorScheme="teal" mb={4}>
-        Add New Item
-      </Button>
+      <HStack spacing={4} mb={4}>
+        <Button onClick={handleAddMealItem} colorScheme="teal">
+          Add New Item
+        </Button>
+        <Button
+          as="label"
+          htmlFor="csv-upload"
+          colorScheme="blue"
+          cursor="pointer"
+        >
+          Import from CSV
+          <input
+            id="csv-upload"
+            type="file"
+            accept=".csv"
+            onChange={handleCsvImport}
+            style={{ display: 'none' }}
+          />
+        </Button>
+      </HStack>
 
       {loading ? (
         <Spinner />
