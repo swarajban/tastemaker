@@ -239,6 +239,16 @@ export default function CreateSchedulePage() {
     );
   };
 
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newStartDate = e.target.value;
+    setStartDate(newStartDate);
+    
+    // Calculate new end date (start date + 7 days)
+    const newEndDate = new Date(newStartDate);
+    newEndDate.setDate(newEndDate.getDate() + 6);
+    setEndDate(newEndDate.toISOString().split('T')[0]);
+  };
+
   return (
     <Box p={4}>
       <Heading>Create Schedule</Heading>
@@ -249,7 +259,7 @@ export default function CreateSchedulePage() {
         <Input
           type="date"
           value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
+          onChange={handleStartDateChange}
         />
       </FormControl>
       <FormControl mt={4} maxW="300px">
