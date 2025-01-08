@@ -11,6 +11,7 @@ import {
   HStack,
   Badge,
   useToast,
+  Tooltip,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
@@ -176,21 +177,23 @@ export default function ViewMealItemsPage() {
         <Button onClick={handleAddMealItem} colorScheme="teal">
           Add New Item
         </Button>
-        <Button
-          as="label"
-          htmlFor="csv-upload"
-          colorScheme="blue"
-          cursor="pointer"
-        >
-          Import from CSV
-          <input
-            id="csv-upload"
-            type="file"
-            accept=".csv"
-            onChange={handleCsvImport}
-            style={{ display: 'none' }}
-          />
-        </Button>
+        <Tooltip label="CSV format: Name, Type (main/side), Notes, Effort (1-3), Tag1, Tag2, Tag3">
+          <Button
+            as="label"
+            htmlFor="csv-upload"
+            colorScheme="blue"
+            cursor="pointer"
+          >
+            Import from CSV
+            <input
+              id="csv-upload"
+              type="file"
+              accept=".csv"
+              onChange={handleCsvImport}
+              style={{ display: 'none' }}
+            />
+          </Button>
+        </Tooltip>
       </HStack>
 
       {loading ? (
