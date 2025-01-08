@@ -7,6 +7,7 @@ import {
   Flex,
   Link,
   Button,
+  Text,
   useColorMode,
   useColorModeValue,
   Spacer,
@@ -76,6 +77,13 @@ export default function Layout() {
           )}
 
           <Spacer />
+
+          {/* Show emailon wider screens when logged in */}
+          {session && (
+            <Text display={{ base: 'none', md: 'block' }} mr={4} fontSize="sm">
+              {session.user.email}
+            </Text>
+          )}
 
           {/* Toggle dark mode */}
           <Button size="sm" onClick={toggleColorMode} mr={2}>
